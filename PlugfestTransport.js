@@ -26,8 +26,10 @@ var iotdb = require('iotdb');
 var iotdb_transport = require('iotdb-transport');
 var _ = iotdb._;
 
-var path = require('path');
+var coap = require('coap');
 
+var path = require('path');
+var events = require('events');
 var util = require('util');
 var url = require('url');
 
@@ -45,17 +47,11 @@ var PlugfestTransport = function (initd) {
     var self = this;
 
     self.initd = _.defaults(
-        initd,
-        {
+        initd, {
             channel: iotdb_transport.channel,
             unchannel: iotdb_transport.unchannel,
-            encode: _encode,
-            decode: _decode,
-            pack: _pack,
-            unpack: _unpack,
         },
-        iotdb.keystore().get("/transports/PlugfestTransport/initd"),
-        {
+        iotdb.keystore().get("/transports/PlugfestTransport/initd"), {
             prefix: "",
             server_host: null,
             server_port: 22001,
@@ -66,7 +62,7 @@ var PlugfestTransport = function (initd) {
     self.native = null;
     self.server_url = null;
 
-    _.net.external.ipv4(function(error, ipv4) {
+    _.net.external.ipv4(function (error, ipv4) {
         if (self.initd.server_host) {
             ipv4 = self.initd.server_host;
         } else if (error) {
@@ -74,7 +70,7 @@ var PlugfestTransport = function (initd) {
         }
 
         var server = coap.createServer();
-        server.listen(self.initd.server_port, "0.0.0.0", function(error) {
+        server.listen(self.initd.server_port, "0.0.0.0", function (error) {
             if (error) {
                 console.log("ERROR", error);
                 return;
@@ -82,6 +78,7 @@ var PlugfestTransport = function (initd) {
 
             self.server_url = "coap://" + ipv4 + ":" + self.initd.server_port;
             console.log("READY", self.server_url);
+            process.exit();
 
             self.native = server;
             self._emitter.emit("server-ready");
@@ -89,7 +86,7 @@ var PlugfestTransport = function (initd) {
     });
 };
 
-PlugfestTransport.prototype = new iotdb_transport.Transport;
+PlugfestTransport.prototype = new iotdb_transport.Transport();
 PlugfestTransport.prototype._class = "PlugfestTransport";
 
 /* --- methods --- */
@@ -97,7 +94,7 @@ PlugfestTransport.prototype._class = "PlugfestTransport";
 /**
  *  See {iotdb_transport.Transport#Transport} for documentation.
  */
-PlugfestTransport.prototype.list = function(paramd, callback) {
+PlugfestTransport.prototype.list = function (paramd, callback) {
     var self = this;
 
     if (arguments.length === 1) {
@@ -115,7 +112,7 @@ PlugfestTransport.prototype.list = function(paramd, callback) {
 /**
  *  See {iotdb_transport.Transport#Transport} for documentation.
  */
-PlugfestTransport.prototype.added = function(paramd, callback) {
+PlugfestTransport.prototype.added = function (paramd, callback) {
     var self = this;
 
     if (arguments.length === 1) {
@@ -131,7 +128,7 @@ PlugfestTransport.prototype.added = function(paramd, callback) {
 /**
  *  See {iotdb_transport.Transport#Transport} for documentation.
  */
-PlugfestTransport.prototype.get = function(paramd, callback) {
+PlugfestTransport.prototype.get = function (paramd, callback) {
     var self = this;
 
     self._validate_get(paramd, callback);
@@ -148,7 +145,7 @@ PlugfestTransport.prototype.get = function(paramd, callback) {
 /**
  *  See {iotdb_transport.Transport#Transport} for documentation.
  */
-PlugfestTransport.prototype.update = function(paramd, callback) {
+PlugfestTransport.prototype.update = function (paramd, callback) {
     var self = this;
 
     self._validate_update(paramd, callback);
@@ -170,7 +167,7 @@ PlugfestTransport.prototype.update = function(paramd, callback) {
 /**
  *  See {iotdb_transport.Transport#Transport} for documentation.
  */
-PlugfestTransport.prototype.updated = function(paramd, callback) {
+PlugfestTransport.prototype.updated = function (paramd, callback) {
     var self = this;
 
     if (arguments.length === 1) {
@@ -184,7 +181,7 @@ PlugfestTransport.prototype.updated = function(paramd, callback) {
 /**
  *  See {iotdb_transport.Transport#Transport} for documentation.
  */
-PlugfestTransport.prototype.remove = function(paramd, callback) {
+PlugfestTransport.prototype.remove = function (paramd, callback) {
     var self = this;
 
     self._validate_remove(paramd, callback);
@@ -193,29 +190,6 @@ PlugfestTransport.prototype.remove = function(paramd, callback) {
 };
 
 /* --- internals --- */
-var _encode = function(s) {
-    return s.replace(/[\/$%#.\]\[]/g, function(c) {
-        return '%' + c.charCodeAt(0).toString(16);
-    });
-};
-
-var _decode = function(s) {
-    return decodeURIComponent(s);
-}
-
-var _unpack = function(d) {
-    return _.d.transform(d, {
-        pre: _.ld_compact,
-        key: _decode,
-    });
-};
-
-var _pack = function(d) {
-    return _.d.transform(d, {
-        pre: _.ld_compact,
-        key: _encode,
-    });
-};
 
 /**
  *  API
