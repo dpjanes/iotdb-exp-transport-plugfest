@@ -41,7 +41,7 @@ var logger = iotdb.logger({
 /**
  *  Create a transport for Plugfest.
  */
-var PlugfestTransport = function (initd, native) {
+var PlugfestTransport = function (initd) {
     var self = this;
 
     self.initd = _.defaults(
@@ -56,11 +56,37 @@ var PlugfestTransport = function (initd, native) {
         },
         iotdb.keystore().get("/transports/PlugfestTransport/initd"),
         {
-            prefix: ""
+            prefix: "",
+            server_host: null,
+            server_port: 22001,
         }
     );
-    
-    self.native = native;
+
+    self._emitter = new events.EventEmitter();
+    self.native = null;
+    self.server_url = null;
+
+    _.net.external.ipv4(function(error, ipv4) {
+        if (self.initd.server_host) {
+            ipv4 = self.initd.server_host;
+        } else if (error) {
+            ipv4 = _.net.ipv4();
+        }
+
+        var server = coap.createServer();
+        server.listen(self.initd.server_port, "0.0.0.0", function(error) {
+            if (error) {
+                console.log("ERROR", error);
+                return;
+            }
+
+            self.server_url = "coap://" + ipv4 + ":" + self.initd.server_port;
+            console.log("READY", self.server_url);
+
+            self.native = server;
+            self._emitter.emit("server-ready");
+        });
+    });
 };
 
 PlugfestTransport.prototype = new iotdb_transport.Transport;
@@ -137,7 +163,7 @@ PlugfestTransport.prototype.update = function(paramd, callback) {
     }, "NOT IMPLEMENTED");
 
     callback({
-        error: new Error("not implemented");
+        error: new Error("not implemented"),
     });
 };
 
