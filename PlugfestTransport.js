@@ -24,6 +24,7 @@
 
 var iotdb = require('iotdb');
 var iotdb_transport = require('iotdb-transport');
+var iotdb_links = require('iotdb-links');
 var _ = iotdb._;
 
 var coap = require('coap');
@@ -62,6 +63,10 @@ var PlugfestTransport = function (initd) {
     self.native = null;
     self.server_url = null;
 
+    self._emitter.on("server-ready", function() {
+        self._setup_server();
+    });
+
     _.net.external.ipv4(function (error, ipv4) {
         if (self.initd.server_host) {
             ipv4 = self.initd.server_host;
@@ -70,6 +75,7 @@ var PlugfestTransport = function (initd) {
         }
 
         var server = coap.createServer();
+        // server.listen(self.initd.server_port, "0.0.0.0", function (error) {
         server.listen(self.initd.server_port, "0.0.0.0", function (error) {
             if (error) {
                 console.log("ERROR", error);
@@ -77,8 +83,13 @@ var PlugfestTransport = function (initd) {
             }
 
             self.server_url = "coap://" + ipv4 + ":" + self.initd.server_port;
-            console.log("READY", self.server_url);
-            process.exit();
+
+            console.log("===============================");
+            console.log("=== Plugfest CoAP Server Up");
+            console.log("=== ");
+            console.log("=== Connect at:");
+            console.log("=== " + self.server_url);
+            console.log("===============================");
 
             self.native = server;
             self._emitter.emit("server-ready");
@@ -88,6 +99,69 @@ var PlugfestTransport = function (initd) {
 
 PlugfestTransport.prototype = new iotdb_transport.Transport();
 PlugfestTransport.prototype._class = "PlugfestTransport";
+
+/* --- CoAP server -- */
+PlugfestTransport.prototype._setup_server = function () {
+    var self = this;
+
+    self.native.on('request', function (req, res) {
+        try {
+            logger.info({
+                method: "_setup_server/on('request')",
+                request_url: req.url,
+                request_method: req.method,
+            }, "CoAP request");
+
+            var _done = function(error, content) {
+                if (error) {
+                    request.code = 500;
+                }
+
+                if (content) {
+                    if (_.is.Dictionary(content)) {
+                        content = JSON.stringify(content);
+                    }
+
+                    res.write(content);
+                }
+
+                res.end();
+            }
+
+            if (req.url === "/.well-known/core") {
+                self._get_well_known(_done);
+            } else if (req.url === "/bulletins") {
+                self._get_bulletins(_done);
+            } else {
+                done(null, {});
+            }
+
+        } catch (x) {
+            logger.error({
+                method: "_setup_server/on('request')",
+                exception: _.error.message(x),
+                stack: x.stack,
+            }, "unexpected exception");
+        }
+    });
+
+};
+
+PlugfestTransport.prototype._get_well_known = function (done) {
+    var self = this;
+    
+    var resultd = {};
+    resultd["/.well-known/core"] = {
+        ct: 65202,
+    };
+    resultd["/bulletins"] = {};
+
+    iotdb_links.produce(resultd, done);
+};
+
+PlugfestTransport.prototype._get_bulletins = function (done) {
+    done(null, {});
+};
 
 /* --- methods --- */
 
@@ -150,6 +224,7 @@ PlugfestTransport.prototype.update = function (paramd, callback) {
 
     self._validate_update(paramd, callback);
 
+    /*
     var channel = self.initd.channel(self.initd, paramd.id, paramd.band);
     var d = self.initd.pack(paramd.value, paramd.id, paramd.band);
 
@@ -158,6 +233,7 @@ PlugfestTransport.prototype.update = function (paramd, callback) {
         channel: channel,
         d: d,
     }, "NOT IMPLEMENTED");
+    */
 
     callback({
         error: new Error("not implemented"),
