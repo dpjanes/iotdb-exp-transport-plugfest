@@ -226,6 +226,19 @@ PlugfestTransport.prototype.updated = function (paramd, callback) {
 };
 
 /**
+ *  See {iotdb_transport.Transport#bands} for documentation.
+ */
+PlugfestTransport.prototype.bands = function (paramd, callback) {
+    var self = this;
+
+    self._validate_bands(paramd, callback);
+
+    var bd = _.shallowCopy(paramd);
+
+    callback(new errors.NeverImplemented(), bd);
+};
+
+/**
  *  See {iotdb_transport.Transport#Transport} for documentation.
  */
 PlugfestTransport.prototype.remove = function (paramd, callback) {
