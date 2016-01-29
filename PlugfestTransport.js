@@ -211,20 +211,9 @@ PlugfestTransport.prototype.put = function (paramd, callback) {
 
     self._validate_update(paramd, callback);
 
-    /*
-    var channel = self.initd.channel(self.initd, paramd.id, paramd.band);
-    var d = self.initd.pack(paramd.value, paramd.id, paramd.band);
+    var pd = _.shallowCopy(paramd);
 
-    logger.error({
-        method: "update",
-        channel: channel,
-        d: d,
-    }, "NOT IMPLEMENTED");
-    */
-
-    callback({
-        error: new Error("not implemented"),
-    });
+    callback(new errors.NotImplemented(), pd);
 };
 
 /**

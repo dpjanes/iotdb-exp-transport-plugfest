@@ -25,6 +25,12 @@ var _update = function() {
             last: "Janes",
             now: now,
         },
+    }, function(error, ud) {
+        if (error) {
+            console.log("#", error);
+            return;
+        }
+        console.log("+ sent", ud);
     });
 };
 
