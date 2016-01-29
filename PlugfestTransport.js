@@ -197,13 +197,10 @@ PlugfestTransport.prototype.get = function (paramd, callback) {
 
     self._validate_get(paramd, callback);
 
-    var channel = self.initd.channel(self.initd, paramd.id, paramd.band);
+    var gd = _.shallowCopy(paramd);
+    gd.value = null;
 
-    // callback(id, band, null); does not exist
-    // OR
-    // callback(id, band, undefined); don't know
-    // OR
-    // callback(id, band, d); data
+    callback(new errors.NotImplemented(), gd);
 };
 
 /**
