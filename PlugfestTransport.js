@@ -173,9 +173,7 @@ PlugfestTransport.prototype.list = function (paramd, callback) {
 
     self._validate_list(paramd, callback);
 
-    callback({
-        end: true,
-    });
+    callback(null, null);
 };
 
 /**
