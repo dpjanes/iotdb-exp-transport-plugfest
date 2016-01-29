@@ -171,11 +171,6 @@ PlugfestTransport.prototype._get_bulletins = function (done) {
 PlugfestTransport.prototype.list = function (paramd, callback) {
     var self = this;
 
-    if (arguments.length === 1) {
-        paramd = {};
-        callback = arguments[0];
-    }
-
     self._validate_list(paramd, callback);
 
     callback({
@@ -188,11 +183,6 @@ PlugfestTransport.prototype.list = function (paramd, callback) {
  */
 PlugfestTransport.prototype.added = function (paramd, callback) {
     var self = this;
-
-    if (arguments.length === 1) {
-        paramd = {};
-        callback = arguments[0];
-    }
 
     self._validate_added(paramd, callback);
 
@@ -245,11 +235,6 @@ PlugfestTransport.prototype.put = function (paramd, callback) {
  */
 PlugfestTransport.prototype.updated = function (paramd, callback) {
     var self = this;
-
-    if (arguments.length === 1) {
-        paramd = {};
-        callback = arguments[0];
-    }
 
     self._validate_updated(paramd, callback);
 };

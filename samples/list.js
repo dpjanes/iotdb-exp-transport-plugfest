@@ -13,7 +13,7 @@ var Transport = require('../PlugfestTransport').PlugfestTransport;
 
 var transport = new Transport({
 });
-transport.list(function(ld) {
+transport.list({}, function(ld) {
     if (!ld) {
         break;
     }
