@@ -244,7 +244,11 @@ PlugfestTransport.prototype.remove = function (paramd, callback) {
 
     self._validate_remove(paramd, callback);
 
-    var channel = self.initd.channel(self.intid, paramd.id, paramd.band);
+    var rd = _.shallowCopy(paramd);
+    delete rd.band;
+    delete rd.value;
+
+    callback(new errors.NotImplemented(), rd);
 };
 
 /* --- internals --- */
