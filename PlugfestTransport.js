@@ -195,7 +195,7 @@ PlugfestTransport.prototype.get = function (paramd, callback) {
 
     self._validate_get(paramd, callback);
 
-    var gd = _.shallowCopy(paramd);
+    var gd = _.d.clone.shallow(paramd);
     gd.value = null;
 
     callback(new errors.NotImplemented(), gd);
@@ -209,7 +209,7 @@ PlugfestTransport.prototype.put = function (paramd, callback) {
 
     self._validate_update(paramd, callback);
 
-    var pd = _.shallowCopy(paramd);
+    var pd = _.d.clone.shallow(paramd);
 
     callback(new errors.NotImplemented(), pd);
 };
@@ -231,7 +231,7 @@ PlugfestTransport.prototype.bands = function (paramd, callback) {
 
     self._validate_bands(paramd, callback);
 
-    var bd = _.shallowCopy(paramd);
+    var bd = _.d.clone.shallow(paramd);
 
     callback(new errors.NeverImplemented(), bd);
 };
@@ -244,7 +244,7 @@ PlugfestTransport.prototype.remove = function (paramd, callback) {
 
     self._validate_remove(paramd, callback);
 
-    var rd = _.shallowCopy(paramd);
+    var rd = _.d.clone.shallow(paramd);
     delete rd.band;
     delete rd.value;
 
